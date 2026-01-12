@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="es">
+APP Component!
+<body>
+<form>
+
+  <label for="fecha_atencion">Fecha Atención:</label>
+  <input type="date" id="fecha_atencion" name="fecha_atencion"><br><br>
+
+  <label for="tipo_entrada">Tipo Entrada:</label>
+  <input type="text" id="tipo_entrada" name="tipo_entrada"><br><br>
+
+  <label for="tipo_persona">Tipo Persona:</label>
+  <input type="text" id="tipo_persona" name="tipo_persona"><br><br>
+
+  <label for="nombre">Nombre:</label>
+  <input type="text" id="nombre" name="nombre"><br><br>
+
+  <label for="apellido1">Apellido1:</label>
+  <input type="text" id="apellido1" name="apellido1"><br><br>
+
+  <label for="apellido2">Apellido2:</label>
+  <input type="text" id="apellido2" name="apellido2"><br><br>
+
+  <label for="sexo">Sexo:</label>
+  <select id="sexo" name="sexo">
+    <option value="">Seleccione</option>
+    <option value="M">Masculino</option>
+    <option value="F">Femenino</option>
+    <option value="O">Otro</option>
+  </select><br><br>
+
+  <label for="tipo_documento">Tipo Documento:</label>
+  <input type="text" id="tipo_documento" name="tipo_documento"><br><br>
+
+  <label for="num_documento">Nº Documento:</label>
+  <input type="text" id="num_documento" name="num_documento"><br><br>
+
+  <label for="pais_origen">País Origen:</label>
+  <input type="text" id="pais_origen" name="pais_origen"><br><br>
+
+  <label for="recien_llegado">Recién Llegado:</label>
+  <select id="recien_llegado" name="recien_llegado">
+    <option value="">Seleccione</option>
+    <option value="si">Sí</option>
+    <option value="no">No</option>
+  </select><br><br>
+
+  <label for="meses_espana">Meses en España:</label>
+  <input type="number" id="meses_espana" name="meses_espana" min="0"><br><br>
+
+  <label for="movil1">Móvil 1:</label>
+  <input type="tel" id="movil1" name="movil1"><br><br>
+
+  <label for="movil2">Móvil 2:</label>
+  <input type="tel" id="movil2" name="movil2"><br><br>
+
+  <label for="correo_electronico">Correo Electrónico:</label>
+  <input type="email" id="correo_electronico" name="correo_electronico"><br><br>
+
+  <label for="direccion_completa">Dirección completa:</label>
+  <input type="text" id="direccion_completa" name="direccion_completa" disabled><br><br>
+
+  <label for="parroquia">Parroquía/Centro/Servicio:</label>
+  <select id="frutas" name="frutas">
+    <option value="manzana">Manzana</option>
+    <option value="banana">Banana</option>
+    <option value="cereza">Cereza</option>
+    <option value="dátil">Dátil</option>
+  </select> <br><br>
+
+  <label for="tecnico">Técnico:</label>
+   <select id="frutas" name="frutas">
+    <option value="manzana">Manzana</option>
+    <option value="banana">Banana</option>
+    <option value="cereza">Cereza</option>
+    <option value="dátil">Dátil</option>
+  </select> <br><br>
+
+
+  <!-- Correo Electrónico (obsoleto) omitted as per instructions -->
+
+  <label for="tipo_derivacion">Tipo de derivación:</label>
+  <input type="text" id="tipo_derivacion" name="tipo_derivacion"><br><br>
+
+  <label for="observaciones">Observaciones:</label>
+  <textarea id="observaciones" name="observaciones"></textarea><br><br>
+
+ <button type="button" id="btnGuardar">Enviar</button>
+<script src="formHandler.js"></script>
+</form>
+
+<a href="milista.html" class="boton-enlace">  Lista de Tecnicos <br> </a>
+<a href="milista.html" class="boton-enlace">  Lista de Parroquias <br>  </a>
+<a href="milista.html" class="boton-enlace">  Lista de Arciprestazgos <br> </a>
+
+<main>
+  <router-outlet></router-outlet>
+</main>
+
+
+</body>
+</html>

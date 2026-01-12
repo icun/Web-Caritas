@@ -1,0 +1,103 @@
+/* Card contenedor */
+.form-card{
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(16,24,40,0.08);
+  border: 1px solid rgba(16,24,40,0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+}
+
+/* Grid horizontal / wrap para los campos */
+.form-grid{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px; /* row gap, column gap */
+  align-items: flex-start;
+}
+
+/* Cada campo ocupa un "bloque" */
+.form-grid > * {
+  box-sizing: border-box;
+}
+
+/* Field box: etiqueta + control en columna */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 240px; /* crecer, encoger, ancho base */
+  min-width: 180px;
+}
+
+/* Estilo común para inputs, selects, textarea */
+.form-grid input[type="text"],
+.form-grid input[type="date"],
+.form-grid input[type="email"],
+.form-grid input[type="tel"],
+.form-grid input[type="number"],
+.form-grid select,
+.form-grid textarea {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(16,24,40,0.08);
+  background: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: box-shadow .15s, border-color .15s;
+}
+
+/* foco */
+.form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus {
+  box-shadow: 0 6px 18px rgba(59,130,246,0.08);
+  border-color: rgba(59,130,246,0.6);
+}
+
+/* Textarea height */
+.form-grid textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+
+/* Acción (botón) alineado a la derecha en pantallas grandes */
+.form-actions{
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Botón */
+.form-actions button {
+  background: linear-gradient(90deg,#2563eb,#7c3aed);
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(37,99,235,0.12);
+}
+.form-actions button:hover {
+  opacity: .96;
+  transform: translateY(-1px);
+}
+
+/* Responsive: en pantallas pequeñas los campos ocupan toda la anchura */
+@media (max-width: 720px){
+  .form-grid {
+    gap: 10px;
+  }
+  .form-grid > * {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+  .form-actions {
+    justify-content: center;
+  }
+}

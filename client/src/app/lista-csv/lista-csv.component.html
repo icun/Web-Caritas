@@ -1,0 +1,22 @@
+<h2>Filtrar lista CSV</h2>
+<form (ngSubmit)="filtrar()">
+  <input type="date" id="fecha" [(ngModel)]="fecha" name="fecha">
+  <select id="tecnico" [(ngModel)]="tecnico" name="tecnico">
+    <option value="">Todos</option>
+    <option *ngFor="let t of tecnicos" [value]="t.id">{{ t.nombre }}</option>
+  </select>
+  <button type="submit">Filtrar</button>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th *ngFor="let col of columnas">{{ col }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let fila of lista">
+      <td *ngFor="let col of columnas">{{ fila[col] }}</td>
+    </tr>
+  </tbody>
+</table>

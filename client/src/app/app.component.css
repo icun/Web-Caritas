@@ -1,0 +1,14 @@
+.form-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* cambia a flex-start si quieres a la izquierda */
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.form-logo {
+  height: 56px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}

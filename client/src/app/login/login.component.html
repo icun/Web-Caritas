@@ -1,0 +1,19 @@
+<!-- Mostrar formulario SOLO si NO autenticado -->
+<div *ngIf="!(auth?.auth$ | async)">
+  <form (ngSubmit)="submit()" novalidate>
+    <label>Usuario</label>
+    <input type="text" name="username" [(ngModel)]="username" />
+    <label>Contraseña</label>
+    <input type="password" name="password" [(ngModel)]="password" />
+    <button type="submit" [disabled]="loading">Entrar</button>
+    <div *ngIf="error" class="error">{{ error }}</div>
+  </form>
+</div>
+
+<ng-template #already>
+  <!-- Si ya autenticado: solo mostrar botón Cerrar sesión u otro contenido -->
+  <div>
+    <p>Sesión iniciada</p>
+    <button (click)="logout()">Cerrar sesión</button>
+  </div>
+</ng-template>

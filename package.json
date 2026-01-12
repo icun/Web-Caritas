@@ -1,0 +1,36 @@
+{
+  "name": "my-app",
+  "version": "1.0.0",
+  "main": "index.js",
+ "scripts": {
+    "start:server": "cd server && node server.js",
+    "start:client": "cd client && ng serve",
+    "start": "concurrently \"npm run start:server\" \"npm run start:client\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@angular/cli": "^20.2.1",
+    "@angular/common": "^20.2.3",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "json2csv": "^6.0.0-alpha.2",
+    "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^4.0.0",
+    "mysql2": "^3.15.3",
+    "node-fetch": "^2.7.0",
+    "nodemailer": "^7.0.10",
+    "pg": "^8.16.3",
+    "sqlite3": "^5.1.7",
+    "zone.js": "^0.15.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "rimraf": "^6.0.1"
+  }
+}

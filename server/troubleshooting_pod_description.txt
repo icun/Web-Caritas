@@ -1,0 +1,55 @@
+Name:             backend-6677965645-4xs62
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             minikube/192.168.49.2
+Start Time:       Wed, 17 Dec 2025 11:23:43 +0100
+Labels:           app=backend
+                  pod-template-hash=6677965645
+Annotations:      <none>
+Status:           Pending
+IP:               10.244.0.4
+IPs:
+  IP:           10.244.0.4
+Controlled By:  ReplicaSet/backend-6677965645
+Containers:
+  backend:
+    Container ID:   
+    Image:          backend:latest
+    Image ID:       
+    Port:           3000/TCP
+    Host Port:      0/TCP
+    State:          Waiting
+      Reason:       ImagePullBackOff
+    Ready:          False
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-8x8sm (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       False 
+  ContainersReady             False 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-8x8sm:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                 From               Message
+  ----     ------     ----                ----               -------
+  Normal   Scheduled  55m                 default-scheduler  Successfully assigned default/backend-6677965645-4xs62 to minikube
+  Normal   Pulling    52m (x5 over 55m)   kubelet            Pulling image "backend:latest"
+  Warning  Failed     52m (x5 over 55m)   kubelet            Failed to pull image "backend:latest": Error response from daemon: pull access denied for backend, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
+  Warning  Failed     52m (x5 over 55m)   kubelet            Error: ErrImagePull
+  Normal   BackOff    8s (x239 over 55m)  kubelet            Back-off pulling image "backend:latest"
+  Warning  Failed     8s (x239 over 55m)  kubelet            Error: ImagePullBackOff

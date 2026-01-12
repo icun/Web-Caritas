@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<body>
+<form>
+  <label for="fecha_atencion">Fecha Atención:</label>
+  <input type="date"  [(ngModel)]="fecha_atencion" name="fecha_atencion"><br><br>
+
+  <label for="tipo_entrada">Tipo Entrada:</label>
+  <input type="text"  [(ngModel)]="tipo_entrada" name="tipo_entrada"><br><br>
+
+  <label for="tipo_persona">Tipo Persona:</label>
+  <input type="text"  [(ngModel)]="tipo_persona" name="tipo_persona"><br><br>
+
+  <label for="nombre">Nombre:</label>
+  <input type="text"  [(ngModel)]="nombre" name="nombre"><br><br>
+
+  <label for="apellido1">Apellido1:</label>
+  <input type="text"  [(ngModel)]="apellido1" name="apellido1"><br><br>
+
+  <label for="apellido2">Apellido2:</label>
+  <input type="text"  [(ngModel)]="apellido2" name="apellido2"><br><br>
+
+  <label for="sexo">Sexo:</label>
+  <select  [(ngModel)]="sexo" name="sexo">
+    <option value="">Seleccione</option>
+    <option value="M">Masculino</option>
+    <option value="F">Femenino</option>
+    <option value="O">Otro</option>
+  </select><br><br>
+
+  <label for="tipo_documento">Tipo Documento:</label>
+  <input type="text"  [(ngModel)]="tipo_documento" name="tipo_documento"><br><br>
+
+  <label for="num_documento">Nº Documento:</label>
+  <input type="text"  [(ngModel)]="num_documento" name="num_documento"><br><br>
+
+  <label for="pais_origen">País Origen:</label>
+  <input type="text"  [(ngModel)]="pais_origen" name="pais_origen"><br><br>
+
+  <label for="recien_llegado">Recién Llegado:</label>
+  <select  [(ngModel)]="recien_llegado" name="recien_llegado">
+    <option value="">Seleccione</option>
+    <option value="si">Sí</option>
+    <option value="no">No</option>
+  </select><br><br>
+
+  <label for="meses_espana">Meses en España:</label>
+  <input type="number"  [(ngModel)]="meses_espana" name="meses_espana" min="0"><br><br>
+
+  <label for="movil1">Móvil 1:</label>
+  <input type="tel"  [(ngModel)]="movil1" name="movil1"><br><br>
+
+  <label for="movil2">Móvil 2:</label>
+  <input type="tel"  [(ngModel)]="movil2" name="movil2"><br><br>
+
+  <label for="correo_electronico">Correo Electrónico:</label>
+  <input type="email"  [(ngModel)]="correo_electronico" name="correo_electronico"><br><br>
+
+  <label for="direccion_completa">Dirección completa:</label>
+  <input type="text"  [(ngModel)]="direccion_completa" name="direccion_completa" disabled><br><br>
+
+  <label for="parroquia">Parroquía/Centro/Servicio:</label>
+  <select  [(ngModel)]="centro" name="centro">
+    <option value="manzana">Manzana</option>
+    <option value="banana">Banana</option>
+    <option value="cereza">Cereza</option>
+    <option value="dátil">Dátil</option>
+  </select> <br><br>
+
+  <label for="tecnico">Técnico:</label>
+   <select  [(ngModel)]="Tecnicos" name="tecnico">
+    <option value="manzana">Manzana</option>
+    <option value="banana">Banana</option>
+    <option value="cereza">Cereza</option>
+    <option value="dátil">Dátil</option>
+  </select> <br><br>
+
+  <select id="arciprestazgo" name="arciprestazgo" [(ngModel)]="arciprestazgo">
+  <option value="">Seleccione Arciprestazgo</option>
+  <option *ngFor="let arc of arciprestazgos" [value]="arc.id_arciprestazgo">
+    {{ arc.arciprestazgo }}
+  </option>
+</select><br><br> 
+
+  <!-- Correo Electrónico (obsoleto) omitted as per instructions -->
+
+  <label for="tipo_derivacion">Tipo de derivación:</label>
+  <input type="text"  [(ngModel)]="tipo_derivacion" name="tipo_derivacion"><br><br>
+
+  <label for="observaciones">Observaciones:</label>
+  <textarea  [(ngModel)]="observaciones" name="observaciones"></textarea><br><br>
+
+<button type="button" (click)="guardar()">Enviar</button>
+</form>
+
+Lista de tecnicos:
+<ul>
+  <li *ngFor="let tecnico of tecnicos">
+    {{ tecnico.nombre }}
+  </li>
+</ul>
+
+<a href="http://localhost:3000/tables/tecnicos" class="boton-enlace" target="_blank">Lista de Tecnicos <br></a>
+<a href="http://localhost:3000/tables/parroquias" class="boton-enlace" target="_blank">Lista de Parroquias <br></a>
+<a href="http://localhost:3000/tables/centros" class="boton-enlace" target="_blank">Lista de Arciprestazgos <br></a>
+
+<main>
+  <router-outlet></router-outlet>
+</main>
+
+
+</body>
+</html>

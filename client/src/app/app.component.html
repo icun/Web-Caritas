@@ -1,0 +1,310 @@
+<!-- plantilla del componente: NO incluir <!DOCTYPE> ni <html> ni </html> -->
+<!-- mostrar login si NO autenticado, mostrar app si autenticado -->
+
+<!-- Mostrar login si NO autenticado -->
+<ng-container *ngIf="!(auth.auth$ | async); else authed">
+  <router-outlet></router-outlet>
+</ng-container>
+
+<!-- Usuario autenticado -->
+<ng-template #authed>
+  <!-- Botón de logout ROJO flotante (solo aparece si estás autenticado) -->
+  <button (click)="logout()"
+          style="position:fixed; top:12px; right:12px; z-index:1000; padding:8px 12px; background:#c62828; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">
+    Cerrar sesión
+  </button>
+
+  <!-- Si es el usuario especial user@example.com, mostrar el contenido de app.html DIRECTO (sin iframe) -->
+  <ng-container *ngIf="showAppHtml; else normalApp">
+    <div style="padding:16px;">
+      <form>
+       
+
+  <label for="fecha_atencion">Fecha Atención:</label>
+  <input type="date" [(ngModel)]="fecha_atencion" name="fecha_atencion"><br><br>       
+
+
+  <label for="tipo_entrada">Tipo Entrada:</label>
+  <input type="text"  [(ngModel)]="tipo_entrada" name="tipo_entrada"><br><br>
+
+  <label for="tipo_persona">Tipo Persona:</label>
+  <input type="text"  [(ngModel)]="tipo_persona" name="tipo_persona"><br><br>
+
+  <label for="nombre">Nombre:</label>
+  <input type="text"  [(ngModel)]="nombre" name="nombre"><br><br>
+
+  <label for="apellido1">Apellido1:</label>
+  <input type="text"  [(ngModel)]="apellido1" name="apellido1"><br><br>
+
+  <label for="apellido2">Apellido2:</label>
+  <input type="text"  [(ngModel)]="apellido2" name="apellido2"><br><br>
+
+  <label for="sexo">Sexo:</label>
+  <select  [(ngModel)]="sexo" name="sexo">
+    <option value="">Seleccione</option>
+    <option value="M">Masculino</option>
+    <option value="F">Femenino</option>
+    <option value="O">Otro</option>
+  </select><br><br>
+
+  <label for="tipo_documento">Tipo Documento:</label>
+  <input type="text"  [(ngModel)]="tipo_documento" name="tipo_documento"><br><br>
+
+  <label for="num_documento">Nº Documento:</label>
+  <input type="text"  [(ngModel)]="num_documento" name="num_documento"><br><br>
+
+  <label for="pais_origen">País Origen:</label>
+  <input type="text"  [(ngModel)]="pais_origen" name="pais_origen"><br><br>
+
+  <label for="recien_llegado">Recién Llegado:</label>
+  <select  [(ngModel)]="recien_llegado" name="recien_llegado">
+    <option value="">Seleccione</option>
+    <option value="si">Sí</option>
+    <option value="no">No</option>
+  </select><br><br>
+
+  <label for="meses_espana">Meses en España:</label>
+  <input type="number"  [(ngModel)]="meses_espana" name="meses_espana" min="0"><br><br>
+
+  <label for="movil1">Móvil 1:</label>
+  <input type="tel"  [(ngModel)]="movil1" name="movil1"><br><br>
+
+  <label for="movil2">Móvil 2:</label>
+  <input type="tel"  [(ngModel)]="movil2" name="movil2"><br><br>
+
+  <label for="correo_electronico">Correo Electrónico:</label>
+  <input type="email"  [(ngModel)]="correo_electronico" name="correo_electronico"><br><br>
+
+  <label for="direccion_completa">Dirección completa:</label>
+  <input type="text"  [(ngModel)]="direccion_completa" name="direccion_completa" disabled><br><br>
+
+  <!-- Correo Electrónico (obsoleto) omitted as per instructions -->
+
+  <label for="tipo_derivacion">Tipo de derivación:</label>
+  <input type="text"  [(ngModel)]="tipo_derivacion" name="tipo_derivacion"><br><br>
+
+  <label for="observaciones">Observaciones:</label>
+  <textarea  [(ngModel)]="observaciones" name="observaciones"></textarea><br><br>
+
+        <label for="centro">Parroquía/Centro/Servicio:</label>
+        <select [(ngModel)]="centro" name="centro">
+          <option value="">-- Seleccione --</option>
+          <option *ngFor="let c of centros" [value]="c.id">{{ c.nombre }}</option>
+        </select><br><br>
+
+        <label for="tecnico">Técnico:</label>
+        <select [(ngModel)]="selectedTecnicoId" name="tecnico">
+          <option value="">-- Seleccione --</option>
+          <option *ngFor="let t of tecnicos" [value]="t.id">{{ t.nombre }} {{ t.apellidos }}</option>
+        </select><br><br>
+
+        <label for="arciprestazgo">Arciprestazgo:</label>
+        <select [(ngModel)]="arciprestazgo" name="arciprestazgo">
+          <option value="">-- Seleccione --</option>
+          <option *ngFor="let a of arciprestazgos" [value]="a.id">{{ a.nombre }}</option>
+        </select><br><br>
+
+        <button type="button" (click)="guardar()">Enviar</button>
+      </form>
+    </div>
+  </ng-container>
+
+  <!-- Vista normal para otros usuarios -->
+  <ng-template #normalApp>
+    <header style="padding:8px; display:flex; justify-content:space-between; align-items:center;">
+      <img src="/logo_blanco.jpg" alt="Logo" style="height:120px; width:auto; display:block;">
+    </header>
+
+    <main style="padding:16px;">
+      <div class="form-card">
+        <form class="form-grid" (ngSubmit)="guardar()">
+          <label for="fecha_atencion">Fecha Atención:</label>
+          <input type="date" [(ngModel)]="fecha_atencion" name="fecha_atencion">
+
+          <label for="tecnico">Técnico:</label>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <select [(ngModel)]="selectedTecnicoId" name="selectedTecnicoId" [disabled]="isTecnico">
+              <option value="">-- Todos --</option>
+              <option *ngFor="let t of tecnicos" [value]="t.id">{{ t.nombre }} {{ t.apellidos }}</option>
+            </select>
+
+            <button type="button" (click)="viewTecnicoById(selectedTecnicoId)" [disabled]="!selectedTecnicoId">Ver ficha</button>
+
+            <!-- Nuevo: editar ficha del técnico seleccionado (SOLO ADMIN) -->
+            <button *ngIf="isAdmin"
+                    type="button"
+                    (click)="editFichaTecnico(selectedTecnicoId)"
+                    [disabled]="!selectedTecnicoId"
+                    style="background:#1976d2;color:#fff;border:none;padding:6px 10px;border-radius:4px; cursor:pointer;">
+              Editar ficha
+            </button>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit">Enviar</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- bloque FICHA: mostrar cuando exista selectedTecnico -->
+      <section *ngIf="selectedTecnico" style="margin-top:12px;padding:12px;border:1px solid #ddd;background:#fafafa;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>Ficha técnico</strong>
+          <div>
+            <button (click)="closeFicha()" style="margin-right:8px;">Cerrar</button>
+            <!-- Botón EDITAR FICHA aquí (solo admin) -->
+            <button *ngIf="isAdmin"
+                    (click)="editFichaTecnico(selectedTecnico.id)" 
+                    style="background:#1976d2;color:#fff;border:none;padding:6px 10px;border-radius:4px; cursor:pointer;">
+              Editar ficha
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-top:8px;">
+          <div><strong>ID:</strong> {{ selectedTecnico.id }}</div>
+          <div><strong>Nombre:</strong> {{ selectedTecnico.nombre }} {{ selectedTecnico.apellidos }}</div>
+
+          <!-- mostrar todos los campos crudos para debugging -->
+          <div *ngFor="let kv of selectedTecnico._raw | keyvalue">
+            <strong>{{ kv.key }}:</strong> {{ kv.value }}
+          </div>
+        </div>
+      </section>
+
+      <!-- Sección: listas obtenidas desde el servidor (SOLO ADMIN) -->
+      <section *ngIf="isAdmin" style="margin-top:16px;">
+  <div style="display:flex; gap:24px; align-items:flex-start;">
+    <!-- Tecnicos -->
+    <div style="flex:1">
+      <h3>Técnicos</h3>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <select [(ngModel)]="selectedTecnicoId" name="selectedTecnicoId" [disabled]="isTecnico">
+          <option value="">-- Todos --</option>
+          <option *ngFor="let t of tecnicos" [value]="t.id">{{ t.nombre }} {{ t.apellidos }}</option>
+        </select>
+        <button type="button" (click)="openEditTecnicos()" style="background:#2196F3; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">Editar</button>
+      </div>
+      <div *ngIf="!tecnicos?.length" style="color:#999">No hay técnicos cargados.</div>
+    </div>
+
+    <!-- Arciprestazgos -->
+    <div style="flex:1">
+      <h3>Arciprestazgos</h3>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <select [(ngModel)]="arciprestazgo" name="arciprestazgo">
+          <option value="">-- Todos --</option>
+          <option *ngFor="let a of arciprestazgos" [value]="a.id">{{ a.nombre }}</option>
+        </select>
+        <button type="button" (click)="openEditArciprestazgos()" style="background:#2196F3; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">Editar</button>
+      </div>
+      <div *ngIf="!arciprestazgos?.length" style="color:#999">No hay arciprestazgos cargados.</div>
+    </div>
+
+    <!-- Centros -->
+    <div style="flex:1">
+      <h3>Centros / Parroquias</h3>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <select [(ngModel)]="centro" name="centro">
+          <option value="">-- Todos --</option>
+          <option *ngFor="let c of centros" [value]="c.id">{{ c.nombre }}</option>
+        </select>
+        <button type="button" (click)="openEditCentros()" style="background:#2196F3; color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">Editar</button>
+      </div>
+      <div *ngIf="!centros?.length" style="color:#999">No hay centros cargados.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Reemplaza/añade los botones "Editar" para abrir el panel interno (ya están los botones) -->
+<!-- Añadir al final de la sección de listas el panel de edición (modal simple/slide) -->
+<div *ngIf="editingPanelVisible" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:2000; display:flex; align-items:flex-start; justify-content:center; padding-top:32px;">
+  <div style="width:920px; max-width:calc(100% - 32px); background:#fff; border-radius:6px; padding:16px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+      <h3 style="margin:0;">Editar {{ editingPanelTarget === 'tecnicos' ? 'Técnicos' : editingPanelTarget === 'arciprestazgos' ? 'Arciprestazgos' : editingPanelTarget === 'centros' ? 'Centros' : 'Listas' }}</h3>
+      <div>
+        <button (click)="closeEditingPanel()" style="margin-right:8px;">Cerrar</button>
+        <button (click)="refreshAllLists()" style="background:#2196F3;color:#fff;border:none;padding:6px 10px;border-radius:4px;">Refrescar</button>
+      </div>
+    </div>
+ 
+    <!-- Contenedor con altura máxima y scroll -->
+    <div style="display:flex; gap:12px; margin-top:12px; max-height:60vh; overflow:auto; padding-right:8px;">
+      <!-- Cada columna con scroll independiente si hace falta -->
+      <div *ngIf="editingPanelTarget === 'tecnicos'" style="flex:1; min-width:280px; max-width:920px; max-height:56vh; overflow:auto; padding-right:8px;">
+        <h4>Técnicos</h4>
+
+        <!-- EDITAR FICHA DESTACADA -->
+        <div *ngIf="editingHighlightId">
+          <div *ngIf="getTecnicoById(editingHighlightId) as editT" style="margin-bottom:12px;padding:12px;border:1px solid #ddd;background:#fff;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>Ficha técnico</strong>
+              <div>
+                <button (click)="editingHighlightId = null" style="margin-right:8px;">Cerrar</button>
+                <button (click)="saveTecnico(editT)" style="background:#4caf50;color:#fff;border:none;padding:6px 10px;border-radius:4px;">Guardar ficha</button>
+              </div>
+            </div>
+
+            <div style="margin-top:8px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <div><label>ID:<input readonly class="input" [(ngModel)]="editT.id" /></label></div>
+              <div><label>DNI:<input [(ngModel)]="editT.DNI" /></label></div>
+
+              <div style="grid-column:1 / -1;"><label>Nombre completo:<input [(ngModel)]="editT.nombre" style="width:100%" /></label></div>
+              <div><label>Apellido_1:<input [(ngModel)]="editT.apellido1" /></label></div>
+              <div><label>Apellido_2:<input [(ngModel)]="editT.apellido2" /></label></div>
+
+              <div><label>Email:<input [(ngModel)]="editT.email" type="email" /></label></div>
+              <div><label>Telf_1:<input [(ngModel)]="editT.telf1" /></label></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LISTA EDITABLE (mantiene inputs por elemento) -->
+        <div *ngFor="let t of tecnicos; let i = index" [attr.data-tecnico-id]="t.id" style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+          <input [(ngModel)]="t.nombre" placeholder="Nombre" style="flex:1;" />
+          <input [(ngModel)]="t.apellidos" placeholder="Apellidos" style="flex:1;" />
+          <button (click)="saveTecnico(t)" title="Guardar" style="background:#4caf50;color:#fff;border:none;padding:6px 8px;border-radius:4px;">OK</button>
+          <button (click)="deleteTecnico(t.id)" title="Borrar" style="background:#c62828;color:#fff;border:none;padding:6px 8px;border-radius:4px;">X</button>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <input [(ngModel)]="newTecnicoNombre" placeholder="Nuevo nombre" style="flex:1;" />
+          <input [(ngModel)]="newTecnicoApellidos" placeholder="Nuevo apellidos" style="flex:1;" />
+          <button (click)="addTecnico()" style="background:#1976d2;color:#fff;border:none;padding:6px 10px;border-radius:4px;">Añadir</button>
+        </div>
+      </div>
+ 
+      <div *ngIf="editingPanelTarget === 'arciprestazgos'" style="flex:1; min-width:280px; max-width:920px; max-height:56vh; overflow:auto; padding-right:8px;">
+         <h4>Arciprestazgos</h4>
+         <div *ngFor="let a of arciprestazgos" style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+           <input [(ngModel)]="a.nombre" style="flex:1;" />
+           <button (click)="saveArciprestazgo(a)" style="background:#4caf50;color:#fff;border:none;padding:6px 8px;border-radius:4px;">OK</button>
+           <button (click)="deleteArciprestazgo(a.id)" style="background:#c62828;color:#fff;border:none;padding:6px 8px;border-radius:4px;">X</button>
+         </div>
+         <div style="display:flex; gap:8px; margin-top:8px;">
+           <input [(ngModel)]="newArciprestazgoNombre" placeholder="Nuevo arciprestazgo" style="flex:1;" />
+           <button (click)="addArciprestazgo()" style="background:#1976d2;color:#fff;border:none;padding:6px 10px;border-radius:4px;">Añadir</button>
+         </div>
+       </div>
+ 
+      <div *ngIf="editingPanelTarget === 'centros'" style="flex:1; min-width:280px; max-width:920px; max-height:56vh; overflow:auto; padding-right:8px;">
+         <h4>Centros</h4>
+         <div *ngFor="let c of centros" style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+           <input [(ngModel)]="c.nombre" style="flex:1;" />
+           <button (click)="saveCentro(c)" style="background:#4caf50;color:#fff;border:none;padding:6px 8px;border-radius:4px;">OK</button>
+           <button (click)="deleteCentro(c.id)" style="background:#c62828;color:#fff;border:none;padding:6px 8px;border-radius:4px;">X</button>
+         </div>
+         <div style="display:flex; gap:8px; margin-top:8px;">
+           <input [(ngModel)]="newCentroNombre" placeholder="Nuevo centro" style="flex:1;" />
+           <button (click)="addCentro()" style="background:#1976d2;color:#fff;border:none;padding:6px 10px;border-radius:4px;">Añadir</button>
+         </div>
+       </div>
+    </div>
+   </div>
+ </div>
+
+      <router-outlet></router-outlet>
+    </main>
+  </ng-template>
+</ng-template>
+

@@ -1,0 +1,12 @@
+.home-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 0 12px 0;
+}
+
+.home-logo {
+  height: 56px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}

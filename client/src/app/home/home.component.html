@@ -1,0 +1,55 @@
+<p>Bienvenido a HomeComponent!</p>
+
+<header style="padding:8px; display:flex; justify-content:space-between; align-items:center;">
+  <img src="/logo_blanco.jpg" alt="Logo" style="height:120px; width:auto; display:block;">
+  <!-- Botón Cerrar sesión añadido -->
+  <div>
+    <button type="button" (click)="logout()">Cerrar sesión</button>
+  </div>
+</header>
+
+<!-- FILTRO (aparece 1 vez) -->
+<div *ngIf="isAdmin() || isTecnico()" style="margin:12px 0; padding:8px; border:1px solid #ddd;">
+  <label for="fecha">Fecha:</label>
+  <input type="date" id="fecha" [(ngModel)]="fecha" name="fecha">
+
+  <!-- sólo admin puede elegir técnico -->
+  <ng-container *ngIf="isAdmin()">
+    <label for="tecnico" style="margin-left:12px;">Técnico:</label>
+    <select id="tecnico" [(ngModel)]="tecnico_acogida" name="tecnico">
+      <option value="">Seleccione</option>
+      <option *ngFor="let t of tecnicos" [value]="t.id">{{ t.nombre }}</option>
+    </select>
+  </ng-container>
+
+  <!-- botones compartidos -->
+  <button type="button" (click)="downloadCsv()" style="margin-left:12px;">Descargar CSV</button>
+
+  <!-- botón enviar para admin -->
+  <button
+    *ngIf="isAdmin()"
+    type="button"
+    (click)="sendCsvToEmailAdmin()"
+    [disabled]="sendingEmail || (!fecha && !tecnico_acogida)"
+    style="margin-left:8px;"
+  >
+    {{ sendingEmail ? 'Enviando...' : 'Enviar por email (admin)' }}
+  </button>
+
+  <!-- botón enviar para técnico -->
+  <button
+    *ngIf="isTecnico()"
+    type="button"
+    (click)="sendCsvToEmailTecnico()"
+    [disabled]="sendingEmail || !fecha"
+    style="margin-left:8px;"
+  >
+    {{ sendingEmail ? 'Enviando...' : 'Enviar por email (técnico)' }}
+  </button>
+</div>
+
+<!-- resto del contenido de Home -->
+<!-- ...tu formulario/tabla/registros aquí... -->
+
+
+
