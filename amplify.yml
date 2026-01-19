@@ -9,9 +9,10 @@ frontend:
         - npm install
         - npx ng build --configuration production
   artifacts:
-    baseDirectory: dist/client/browser
+    baseDirectory: dist/client
     files:
       - '**/*'
   cache:
     paths:
       - '.npm/**/*'
+
