@@ -7,7 +7,6 @@ frontend:
         - npm ci --cache .npm --prefer-offline
     build:
       commands:
-        - cd client
         - npx ng build --configuration production
   artifacts:
     baseDirectory: client/dist/client
