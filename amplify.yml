@@ -1,0 +1,23 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - echo "Backend build skipped"
+
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd client
+        - npm ci
+    build:
+      commands:
+        - npx ng build --configuration production
+  artifacts:
+    baseDirectory: client/dist/client
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
