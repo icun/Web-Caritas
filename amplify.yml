@@ -10,7 +10,7 @@ frontend:
         - echo "Building Angular app..."
         - npm run build --prefix client
   artifacts:
-    baseDirectory: client/dist/client
+    baseDirectory: client/dist/client/browser
     files:
       - '**/*'
   cache:
