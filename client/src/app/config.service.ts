@@ -20,7 +20,7 @@ export class ConfigService {
       return 'http://localhost:3000';
     }
 
-    const protocol = window.location.protocol;
+    const protocol = window.location.protocol; // 'https:' o 'http:'
     const hostname = window.location.hostname;
     const port = window.location.port;
 
@@ -30,8 +30,10 @@ export class ConfigService {
     }
     
     // En producción: usar el backend de AWS Elastic Beanstalk
+    // Usar el mismo protocolo (https: o http:) que la página actual
     if (hostname.includes('dsdckejume7fb.amplifyapp.com')) {
-      return 'http://acogida-backend-env.eba-cwdpkgup.us-east-1.elasticbeanstalk.com';
+      // Usar protocolo relativo para evitar problemas de Mixed Content
+      return `${protocol}//acogida-backend-env.eba-cwdpkgup.us-east-1.elasticbeanstalk.com`;
     }
     
     // Fallback: usar la misma URL raíz
