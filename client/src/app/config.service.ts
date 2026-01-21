@@ -29,12 +29,9 @@ export class ConfigService {
       return `${protocol}//localhost:3000`;
     }
     
-    // En producción: usar proxy local a través de Amplify
-    // Esto evita problemas de Mixed Content (HTTPS -> HTTP)
-    // El proxy está configurado en amplify.yml para redirigir /api/* a EB
+    // En producción: usar el backend de AWS EB con HTTPS
     if (hostname.includes('dsdckejume7fb.amplifyapp.com')) {
-      // Usar mismo dominio (HTTPS) - el proxy en Amplify redirige a EB
-      return `${protocol}//${hostname}/api`;
+      return 'https://acogida-backend-env.eba-cwdpkgup.us-east-1.elasticbeanstalk.com';
     }
     
     // Fallback: usar la misma URL raíz

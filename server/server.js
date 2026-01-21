@@ -508,10 +508,42 @@ app.get('*', (req, res) => {
 
 // ===== Start Server =====
 const PORT_FINAL = process.env.PORT || 3000;
+const https = require('https');
 
-// Use HTTP (HTTPS can be added via AWS Certificate Manager + Load Balancer configuration)
-app.listen(PORT_FINAL, () => {
-  console.log(`Server listening on port ${PORT_FINAL} (HTTP)`);
+// Try to load certificates for HTTPS
+const certPath = process.env.CERT_PATH || path.join(__dirname, 'certificate.crt');
+const keyPath = process.env.KEY_PATH || path.join(__dirname, 'private.key');
+
+let serverInstance;
+
+try {
+  // Try to use HTTPS if certificates exist and are valid
+  if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+    try {
+      const cert = fs.readFileSync(certPath, 'utf8');
+      const key = fs.readFileSync(keyPath, 'utf8');
+      
+      // Only use HTTPS if certificate content looks valid (contains BEGIN/END markers)
+      if (cert.includes('BEGIN') && key.includes('BEGIN')) {
+        serverInstance = https.createServer({ cert, key }, app);
+        console.log(`Starting HTTPS server on port ${PORT_FINAL}...`);
+      }
+    } catch (httpsErr) {
+      console.warn(`Could not load HTTPS certificates: ${httpsErr.message}`);
+    }
+  }
+} catch (err) {
+  console.warn(`Certificate check error: ${err.message}`);
+}
+
+// Fall back to HTTP if HTTPS setup failed
+if (!serverInstance) {
+  serverInstance = app;
+  console.log(`Starting HTTP server on port ${PORT_FINAL}...`);
+}
+
+serverInstance.listen(PORT_FINAL, () => {
+  console.log(`Server listening on port ${PORT_FINAL}`);
   console.log(`Frontend served from: ${clientDistPath}`);
 });
 
