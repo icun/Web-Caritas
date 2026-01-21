@@ -98,20 +98,53 @@ app.use((req, res, next) => {
   next();
 });
 
-const db = mysql.createConnection({
-    host: process.env.MYSQL_HOST || 'localhost',
-    port: Number(process.env.MYSQL_PORT || 3306),
-    user: process.env.MYSQL_USER || 'root',
-    password: process.env.MYSQL_PASSWORD || '',
-    database: process.env.MYSQL_DATABASE || 'acogida'
-});
+let db;
+let dbConnected = false;
 
-db.connect(err => {
-    if (err) {
-        console.error('Database connection failed:', err);
-        process.exit(1);
-    }
-    console.log('Database connected successfully.');
+function createDBConnection() {
+    db = mysql.createConnection({
+        host: process.env.MYSQL_HOST || 'localhost',
+        port: Number(process.env.MYSQL_PORT || 3306),
+        user: process.env.MYSQL_USER || 'root',
+        password: process.env.MYSQL_PASSWORD || '',
+        database: process.env.MYSQL_DATABASE || 'acogida',
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0
+    });
+
+    db.connect(err => {
+        if (err) {
+            console.error('Database connection failed:', err.message);
+            dbConnected = false;
+            // Retry connection in 5 seconds
+            setTimeout(createDBConnection, 5000);
+        } else {
+            console.log('Database connected successfully.');
+            dbConnected = true;
+        }
+    });
+
+    db.on('error', err => {
+        console.error('Database error:', err.message);
+        dbConnected = false;
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+            console.log('Reconnecting to database...');
+            createDBConnection();
+        }
+    });
+}
+
+// Initial connection attempt
+createDBConnection();
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        database: dbConnected ? 'connected' : 'disconnected',
+        timestamp: new Date().toISOString()
+    });
 });
 
 app.get('/query', (req, res) => {
