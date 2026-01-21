@@ -17,13 +17,3 @@ frontend:
     paths:
       - 'client/.npm/**/*'
       - 'client/node_modules/**/*'
-# Rewrites for API proxy and SPA routing
-redirects:
-  # API proxy: redirect /api/* requests to EB backend
-  - source: '/api/<*>'
-    destination: 'http://acogida-backend-env.eba-cwdpkgup.us-east-1.elasticbeanstalk.com/api/<*>'
-    statusCode: 200
-  # SPA routing: redirect all other requests to index.html for Angular
-  - source: '/<*>'
-    destination: '/index.html'
-    statusCode: 200
