@@ -1,8 +1,17 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-require('dotenv').config({ path: path.join(__dirname, '../.env') }); // si usas .env
-// (NO require('./routes/auth'))  <-- quitar, evita intento de conexión a Postgres
+
+// Load .env only if it exists (for local development)
+const envPath = path.join(__dirname, '.env');
+const fs = require('fs');
+if (fs.existsSync(envPath)) {
+  require('dotenv').config({ path: envPath });
+} else {
+  // In production (EB), environment variables are set directly
+  console.log('No .env file found - using system environment variables');
+}
+
 const app = express();
 
 // Determinar la ruta del cliente según el entorno
