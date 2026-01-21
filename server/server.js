@@ -106,7 +106,7 @@ const inMemoryUsers = {
     'admin@example.com': {
         id: 1,
         email: 'admin@example.com',
-        password_hash: '$2b$10$lXfYS8gM9SBzlL7p5v3/zOJlIEYNMHmTF9lKGqRgL7I3q6FX6Ln2O', // admin123 hashed
+        password_hash: '$2a$10$sYXgbeltCt4S7viPd9KgQ.VRuHFiRIKnXVPYY7AsOxVqtHf5jx9b.', // admin123 hashed
         roles: 'admin'
     }
 };
