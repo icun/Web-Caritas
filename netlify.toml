@@ -1,8 +1,0 @@
-[api]
-path = "/api/*"
-resource = "acogida-backend-env.eba-cwdpkgup.us-east-1.elasticbeanstalk.com"
-
-[[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
