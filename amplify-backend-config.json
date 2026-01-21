@@ -1,0 +1,15 @@
+{
+  "api": [
+    {
+      "name": "acogida-backend",
+      "endpoint": "http://acogida-backend-env.eba-cwdpkgup.us-east-1.elasticbeanstalk.com",
+      "paths": ["/api/*"]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/<*>",
+      "destination": "/index.html"
+    }
+  ]
+}
