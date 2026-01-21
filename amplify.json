@@ -1,9 +1,0 @@
-{
-  "version": "3",
-  "applications": [
-    {
-      "appRoot": "my-app",
-      "platform": "web"
-    }
-  ]
-}
