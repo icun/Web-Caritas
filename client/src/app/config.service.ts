@@ -29,13 +29,10 @@ export class ConfigService {
       return `${protocol}//localhost:3000`;
     }
     
-    // En producción: backend HTTP directo (Amplify en HTTPS hace proxy)
-    // NOTA: Para HTTPS completo en producción, necesitas:
-    // 1. Configurar rewrites/redirects en Amplify Console
-    // 2. O usar un proxy externo (CloudFront, API Gateway)
-    // 3. O usar HTTPS en EB con ACM certificado
+    // En producción: usar ruta relativa /api
+    // Amplify redirige /api/* a EB backend (configurado en console)
     if (hostname.includes('dsdckejume7fb.amplifyapp.com')) {
-      return 'http://acogida-backend-env.eba-cwdpkgup.us-east-1.elasticbeanstalk.com';
+      return '/api';
     }
     
     // Fallback: usar la misma URL raíz
