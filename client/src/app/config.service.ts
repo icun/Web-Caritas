@@ -30,10 +30,12 @@ export class ConfigService {
     }
     
     // En producción: usar el backend de AWS Elastic Beanstalk
-    // Usar el mismo protocolo (https: o http:) que la página actual
+    // NOTA: Usar HTTP por ahora. Para HTTPS en producción, necesitamos:
+    // 1. AWS Certificate Manager (ACM) - certificado gratis
+    // 2. Adjuntar ACM al Load Balancer de EB
+    // 3. Luego cambiar a https:// aquí
     if (hostname.includes('dsdckejume7fb.amplifyapp.com')) {
-      // Usar protocolo relativo para evitar problemas de Mixed Content
-      return `${protocol}//acogida-backend-env.eba-cwdpkgup.us-east-1.elasticbeanstalk.com`;
+      return 'http://acogida-backend-env.eba-cwdpkgup.us-east-1.elasticbeanstalk.com';
     }
     
     // Fallback: usar la misma URL raíz
