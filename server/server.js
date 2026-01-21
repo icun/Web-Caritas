@@ -25,7 +25,6 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Verificar que existe la carpeta del cliente
-const fs = require('fs');
 if (fs.existsSync(clientDistPath)) {
   console.log(`Client dist found at: ${clientDistPath}`);
   app.use(express.static(clientDistPath));
