@@ -101,6 +101,16 @@ app.use((req, res, next) => {
 let db;
 let dbConnected = false;
 
+// In-memory user database (fallback when DB not available)
+const inMemoryUsers = {
+    'admin@example.com': {
+        id: 1,
+        email: 'admin@example.com',
+        password_hash: '$2b$10$lXfYS8gM9SBzlL7p5v3/zOJlIEYNMHmTF9lKGqRgL7I3q6FX6Ln2O', // admin123 hashed
+        roles: 'admin'
+    }
+};
+
 function createDBConnection() {
     db = mysql.createConnection({
         host: process.env.MYSQL_HOST || 'localhost',
@@ -155,30 +165,57 @@ router.post('/login', (req, res) => {
         return res.status(400).json({ error: 'Email and password required' });
     }
     
-    if (!dbConnected || !db) {
-        return res.status(503).json({ error: 'Database not connected' });
-    }
-    
-    db.query('SELECT id, email, password_hash, roles FROM users WHERE email = ?', [email], async (err, results) => {
-        if (err) {
-            console.error('Login query error:', err);
-            return res.status(500).json({ error: 'Database error' });
-        }
-        
-        if (results.length === 0) {
-            return res.status(401).json({ error: 'credenciales invalidas' });
-        }
-        
-        const user = results[0];
-        
-        try {
-            const passwordMatch = await bcrypt.compare(password, user.password_hash);
+    // Try database first, fallback to in-memory
+    if (dbConnected && db) {
+        db.query('SELECT id, email, password_hash, roles FROM users WHERE email = ?', [email], async (err, results) => {
+            if (err) {
+                console.error('Login query error:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
             
-            if (!passwordMatch) {
+            if (results.length === 0) {
                 return res.status(401).json({ error: 'credenciales invalidas' });
             }
             
-            // Generate JWT token
+            const user = results[0];
+            
+            try {
+                const passwordMatch = await bcrypt.compare(password, user.password_hash);
+                
+                if (!passwordMatch) {
+                    return res.status(401).json({ error: 'credenciales invalidas' });
+                }
+                
+                const token = jwt.sign(
+                    { id: user.id, email: user.email, roles: user.roles },
+                    JWT_SECRET,
+                    { expiresIn: '8h' }
+                );
+                
+                return res.json({
+                    token,
+                    user: { id: user.id, email: user.email, roles: user.roles }
+                });
+            } catch (bcryptErr) {
+                console.error('Password comparison error:', bcryptErr);
+                return res.status(500).json({ error: 'Authentication error' });
+            }
+        });
+    } else {
+        // Use in-memory fallback
+        console.log('Using in-memory user database for login');
+        
+        if (!inMemoryUsers[email]) {
+            return res.status(401).json({ error: 'credenciales invalidas' });
+        }
+        
+        const user = inMemoryUsers[email];
+        
+        bcrypt.compare(password, user.password_hash, (err, match) => {
+            if (err || !match) {
+                return res.status(401).json({ error: 'credenciales invalidas' });
+            }
+            
             const token = jwt.sign(
                 { id: user.id, email: user.email, roles: user.roles },
                 JWT_SECRET,
@@ -189,11 +226,8 @@ router.post('/login', (req, res) => {
                 token,
                 user: { id: user.id, email: user.email, roles: user.roles }
             });
-        } catch (bcryptErr) {
-            console.error('Password comparison error:', bcryptErr);
-            return res.status(500).json({ error: 'Authentication error' });
-        }
-    });
+        });
+    }
 });
 
 // Register endpoint
