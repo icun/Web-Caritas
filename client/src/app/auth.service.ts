@@ -2,15 +2,15 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, BehaviorSubject, Observable } from 'rxjs';
 import * as jwt_decode from 'jwt-decode'; // usar namespace import
-const API_BASE = 'http://localhost:3000'; // <--- add
+import { ConfigService } from './config.service';
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private storageKey = 'app_jwt';
   private _auth$: BehaviorSubject<boolean>;
   public auth$: Observable<boolean>;
-  
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private config: ConfigService) {
     // no llamar a localStorage en tiempo de declaración (evita SSR crash)
     const hasToken = (typeof window !== 'undefined' && !!window.localStorage.getItem(this.storageKey));
     this._auth$ = new BehaviorSubject<boolean>(hasToken);
@@ -46,7 +46,7 @@ export class AuthService {
     try {
        
       const resp = await firstValueFrom(this.http.post<{ token: string }>(
-        `${API_BASE}/api/login`, // <-- use full backend URL
+        `${this.config.getApiBaseUrl()}/api/login`, // <-- use dynamic API URL
         { email, password }
       ));
       console.log('AuthService.login response', resp);

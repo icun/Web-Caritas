@@ -5,13 +5,46 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') }); // si usas 
 // (NO require('./routes/auth'))  <-- quitar, evita intento de conexión a Postgres
 const app = express();
 
-// permitir Authorization y Content-Type desde el frontend (ajusta origin si hace falta)
-app.use(cors({
-  origin: 'http://localhost:4200',
+// Determinar la ruta del cliente según el entorno
+let clientDistPath;
+if (process.env.NODE_ENV === 'production') {
+  // En Docker/producción
+  clientDistPath = path.join(__dirname, 'client_dist');
+} else {
+  // En desarrollo local
+  clientDistPath = path.join(__dirname, '../client/dist/client/browser');
+}
+
+// Verificar que existe la carpeta del cliente
+const fs = require('fs');
+if (fs.existsSync(clientDistPath)) {
+  console.log(`Client dist found at: ${clientDistPath}`);
+  app.use(express.static(clientDistPath));
+} else {
+  console.warn(`Warning: Client dist not found at ${clientDistPath}. API-only mode.`);
+}
+
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests from localhost (development) or without origin (mobile apps, same-origin requests)
+    if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return callback(null, true);
+    }
+    // In production, allow all origins (can be restricted to specific domains)
+    // You can also check an environment variable for the allowed origin
+    const allowedOrigin = process.env.CORS_ORIGIN || '*';
+    if (allowedOrigin === '*' || origin === allowedOrigin) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
   credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: '2mb' })); // importante
 
@@ -22,7 +55,7 @@ const nodemailer = require('nodemailer');
 const fetch = require('node-fetch');
 const { Parser } = require('json2csv');
 const router = express.Router();
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 // reemplaza por tu acceso a BD
 
@@ -51,10 +84,6 @@ function authMiddleware(req, res, next) {
   }
 }
 
-app.use(cors());
-app.use(express.json({ limit: '2mb' }));
-app.use(express.urlencoded({ extended: true }));
-
 // Logger global (verifica qué URL y content-type llegan)
 app.use((req, res, next) => {
   console.log(new Date().toISOString(), req.method, req.originalUrl, 'Content-Type:', req.headers['content-type'], 'Authorization:', req.headers['authorization']);
@@ -75,11 +104,6 @@ db.connect(err => {
         process.exit(1);
     }
     console.log('Database connected successfully.');
-
-    
-    app.listen(3000, () => {
-        console.log('Server listening on port 3000');
-    });
 });
 
 app.get('/query', (req, res) => {
@@ -276,236 +300,29 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-const PORT = process.env.PORT || 3000;
-
-
-app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
-});
-
-app.get('/api/message', (req, res) => {
-  res.json({ message: '¡Hola desde el backend Express!' });
-});
-
-app.get('/api/registro', (req, res) => {
-  db.query('SELECT * FROM registro', (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
+// SPA catch-all - serve index.html for non-API routes
+app.get('*', (req, res) => {
+  // Don't serve index.html for API/query routes that weren't matched
+  if (req.path.startsWith('/api') || req.path.startsWith('/query') || req.path.startsWith('/tables')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  // Serve index.html for all other routes (SPA)
+  const indexPath = path.join(clientDistPath, 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error sending index.html:', err);
+      res.status(404).json({ error: 'index.html not found' });
+    }
   });
 });
 
-app.post('/api/email-csv', express.json(), (req, res) => {
-  const { fecha, tecnico } = req.body;
-  if (!tecnico) return res.status(400).json({ error: 'Se requiere el identificador del técnico' });
-
-  let sql = 'SELECT * FROM `registro` WHERE 1=1';
-  const params = [];
-  if (fecha) { sql += ' AND fecha_atencion = ?'; params.push(fecha); }
-  if (tecnico) { sql += ' AND tecnico = ?'; params.push(tecnico); }
-
-  db.query(sql, params, (err, rows, fields) => {
-    if (err) return res.status(500).json({ error: err.message });
-
-    // generar CSV seguro (si no hay filas, usar solo cabeceras si están disponibles)
-    let csv;
-    try {
-      if (!rows || rows.length === 0) {
-        const headers = (fields || []).map(f => f.name);
-        csv = headers.length ? headers.join(',') + '\n' : '';
-      } else {
-        const parser = new Parser({ fields: (fields || []).map(f => f.name) });
-        csv = parser.parse(rows);
-      }
-    } catch (e) {
-      return res.status(500).json({ error: e.message });
-    }
-
-    // obtener email del técnico desde tabla tecnico_acogida (columna Email)
-    const qEmail = 'SELECT Email FROM tecnico_acogida WHERE DNI = ? OR id = ? LIMIT 1';
-    db.query(qEmail, [tecnico, tecnico], (err2, recRows) => {
-      if (err2) return res.status(500).json({ error: err2.message });
-      if (!recRows || recRows.length === 0 || !recRows[0].Email) {
-        return res.status(404).json({ error: 'No se encontró email del técnico' });
-      }
-      const to = recRows[0].Email;
-
-      // transporter: configurar con variables de entorno
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || '587', 10),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
-      });
-
-      const tecnicoSafe = String(tecnico).replace(/\s+/g, '_');
-      const fechaSafe = fecha || new Date().toISOString().slice(0,10);
-      const filename = `lista_${tecnicoSafe}_${fechaSafe}.csv`;
-
-      const mailOptions = {
-        from: process.env.EMAIL_FROM || 'no-reply@example.com',
-        to,
-        subject: `Lista ${fechaSafe} - ${tecnicoSafe}`,
-        text: 'Adjunto envío de la lista en formato CSV.',
-        attachments: [
-          { filename, content: Buffer.from(csv), contentType: 'text/csv' }
-        ]
-      };
-
-      transporter.sendMail(mailOptions, (err3, info) => {
-        if (err3) return res.status(500).json({ error: err3.message });
-        return res.json({ success: true, info });
-      });
-    });
-  });
+// ===== Start Server =====
+const PORT_FINAL = process.env.PORT || 3000;
+app.listen(PORT_FINAL, () => {
+  console.log(`Server listening on port ${PORT_FINAL}`);
+  console.log(`Frontend served from: ${clientDistPath}`);
 });
 
-// POST /api/email-csv-filter
-// body: { fecha?: string, tecnico?: string, email: string }
-app.post('/api/email-csv-filter', async (req, res) => {
-  const { fecha, tecnico, email } = req.body;
-  if (!email) return res.status(400).json({ error: 'email required' });
-
-  try {
-    // construir URL del CSV (usa tu endpoint existente)
-    const params = new URLSearchParams();
-    if (fecha) params.set('fecha', fecha);
-    if (tecnico) params.set('tecnico', tecnico);
-    const csvUrl = `http://localhost:3000/api/lista-csv${params.toString() ? '?' + params.toString() : ''}`;
-
-    // obtener CSV (respuesta como blob)
-    const resp = await fetch(csvUrl);
-    if (!resp.ok) {
-      const text = await resp.text().catch(()=>null);
-      return res.status(500).json({ error: 'Error generando CSV', details: text });
-    }
-    const buffer = await resp.buffer();
-
-    // configurar transport (usar variables de entorno)
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
-    });
-
-    const tecnicoNombre = tecnico || 'todos';
-    const fechaSafe = fecha || new Date().toISOString().slice(0,10);
-    const filename = `lista_${tecnicoNombre}_${fechaSafe}.csv`.replace(/\s+/g,'_');
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'no-reply@example.com',
-      to: email,
-      subject: `CSV registros ${fechaSafe} - ${tecnicoNombre}`,
-      text: `Adjunto CSV solicitado (${tecnicoNombre} - ${fechaSafe})`,
-      attachments: [{ filename, content: buffer }]
-    });
-
-    return res.json({ ok: true });
-  } catch (err) {
-    console.error('email-csv-filter error', err);
-    return res.status(500).json({ error: err.message || String(err) });
-  }
-});
-
-
-// register (admin crea técnico o self-register)
-router.post('/register', async (req, res) => {
-  const { email, password, roles = ['tecnico'], tecnicoId = null } = req.body || {};
-  if (!email || !password) return res.status(400).json({ error: 'email y password requeridos' });
-
-  try {
-    const hashed = await bcrypt.hash(password, 10);
-    const rolesStr = JSON.stringify(roles);
-    const [result] = await db.promise().execute(
-      'INSERT INTO users (email, password_hash, roles, tecnico_id) VALUES (?, ?, ?, ?)',
-      [email, hashed, rolesStr, tecnicoId]
-    );
-    return res.status(201).json({ id: result.insertId, email, roles, tecnicoId });
-  } catch (err) {
-    console.error('register error', err);
-    if (err && err.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'email already exists' });
-    return res.status(500).json({ error: 'error creando usuario' });
-  }
-});
-
-router.post('/login', async (req, res) => {
-  console.log('POST /api/login body:', req.body);
-  const { email, password } = req.body || {};
-  if (!email || !password) {
-    console.log('login missing fields');
-    return res.status(400).json({ error: 'email y password requeridos' });
-  }
-
-  try {
-    const [rows] = await db.promise().execute(
-      'SELECT id, email, password_hash, roles, tecnico_id FROM users WHERE email = ? LIMIT 1',
-      [email]
-    );
-    const user = (rows || [])[0];
-    console.log('found user row:', !!user, user ? { id: user.id, email: user.email, hashLength: (user.password_hash||'').length } : null);
-
-    if (!user) {
-      return res.status(401).json({ error: 'credenciales inválidas' });
-    }
-
-    const ok = await bcrypt.compare(password, user.password_hash);
-    console.log('bcrypt compare result:', ok);
-    if (!ok) {
-      return res.status(401).json({ error: 'credenciales inválidas' });
-    }
-
-    let roles = [];
-    try { roles = JSON.parse(user.roles); } catch { roles = Array.isArray(user.roles) ? user.roles : ['user']; }
-
-    const payload = { id: user.id, email: user.email, roles, tecnicoId: user.tecnico_id };
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
-    console.log('login success for', user.email);
-    return res.json({ token });
-  } catch (err) {
-    console.error('login error', err);
-    return res.status(500).json({ error: 'server error' });
-  }
-});
-
-router.get('/tecnicos/:tecnicoId/usuarios', authMiddleware, async (req, res) => {
-  const rid = req.params.tecnicoId;
-  const user = req.user;
-  if (!(user.roles?.includes('admin') || String(user.tecnicoId) === String(rid))) {
-    return res.status(403).json({ error: 'forbidden' });
-  }
-  try {
-    const [rows] = await db.promise().execute(
-      'SELECT id, nombre, email FROM usuarios WHERE tecnico_id = ?',
-      [rid]
-    );
-    return res.json(rows || []);
-  } catch (err) {
-    console.error('get usuarios error', err);
-    return res.status(500).json({ error: 'server error' });
-  }
-});
-
-// me
-router.get('/me', authMiddleware, (req, res) => {
-  res.json(req.user);
-});
-
-// Añadir esto cerca de otros endpoints / después de declarar router y authMiddleware
-router.get('/registro', authMiddleware, async (req, res) => {
-
-   db.query('SELECT * FROM registro', (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
-});
-
-module.exports = router;
 
 
 

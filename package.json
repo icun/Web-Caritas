@@ -12,8 +12,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@angular/cli": "^20.2.1",
-    "@angular/common": "^20.2.3",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
@@ -30,7 +28,6 @@
     "zone.js": "^0.15.1"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^21.1.0",
     "concurrently": "^9.2.1",
     "rimraf": "^6.0.1"
   }

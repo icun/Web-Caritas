@@ -2,10 +2,18 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Pool } = require('pg');
+const mysql = require('mysql2/promise');
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL // define en .env
+// MySQL pool configuration
+const pool = mysql.createPool({
+  host: process.env.MYSQL_HOST || 'localhost',
+  port: Number(process.env.MYSQL_PORT || 3306),
+  user: process.env.MYSQL_USER || 'root',
+  password: process.env.MYSQL_PASSWORD || '',
+  database: process.env.MYSQL_DATABASE || 'acogida',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
 // secret JWT en env: JWT_SECRET
@@ -34,18 +42,24 @@ router.post('/register', async (req, res) => {
 
   try {
     const password_hash = bcrypt.hashSync(password, 10);
-    const client = await pool.connect();
+    const connection = await pool.getConnection();
     try {
-      const insert = `INSERT INTO acogida.users (email, password_hash, roles, tecnico_id)
-                      VALUES ($1, $2, $3, $4) RETURNING id, email, roles, tecnico_id, created_at`;
-      const result = await client.query(insert, [email, password_hash, roles, tecnicoId]);
-      return res.status(201).json(result.rows[0]);
+      const rolesJson = JSON.stringify(roles);
+      await connection.execute(
+        'INSERT INTO users (email, password_hash, roles, tecnico_id) VALUES (?, ?, ?, ?)',
+        [email, password_hash, rolesJson, tecnicoId]
+      );
+      const [result] = await connection.execute(
+        'SELECT id, email, roles, tecnico_id, created_at FROM users WHERE email = ?',
+        [email]
+      );
+      return res.status(201).json(result[0]);
     } finally {
-      client.release();
+      connection.release();
     }
   } catch (err) {
     console.error('register error', err);
-    if (err.code === '23505') return res.status(409).json({ error: 'email already exists' });
+    if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'email already exists' });
     return res.status(500).json({ error: 'server error' });
   }
 });
@@ -57,11 +71,13 @@ router.post('/login', async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'email and password required' });
 
   try {
-    const client = await pool.connect();
+    const connection = await pool.getConnection();
     try {
-      const q = 'SELECT id, email, password_hash, roles, tecnico_id FROM acogida.users WHERE email = $1';
-      const r = await client.query(q, [email]);
-      const user = r.rows[0];
+      const [results] = await connection.execute(
+        'SELECT id, email, password_hash, roles, tecnico_id FROM users WHERE email = ?',
+        [email]
+      );
+      const user = results[0];
       if (!user) return res.status(401).json({ error: 'invalid credentials' });
 
       const ok = bcrypt.compareSync(password, user.password_hash);
@@ -70,13 +86,13 @@ router.post('/login', async (req, res) => {
       const payload = {
         id: user.id,
         email: user.email,
-        roles: user.roles,
+        roles: typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles,
         tecnicoId: user.tecnico_id
       };
       const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
       return res.json({ token });
     } finally {
-      client.release();
+      connection.release();
     }
   } catch (err) {
     console.error('login error', err);
