@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
 
+// API Configuration Service for dynamic backend URL routing
+// Backend: Elastic Beanstalk endpoint for production
+
 @Injectable({
   providedIn: 'root'
 })
