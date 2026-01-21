@@ -509,42 +509,11 @@ app.get('*', (req, res) => {
 // ===== Start Server =====
 const PORT_FINAL = process.env.PORT || 3000;
 
-// Enable HTTPS with self-signed certificate for production
-const https = require('https');
-const crypto = require('crypto');
-
-// In production on EB, we'll use a self-signed certificate
-// For ACM certificate support, set CERT_PATH and KEY_PATH env vars
-const certPath = process.env.CERT_PATH || path.join(__dirname, 'certificate.crt');
-const keyPath = process.env.KEY_PATH || path.join(__dirname, 'private.key');
-
-let useHttps = false;
-
-// Check if certificates exist
-if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
-  try {
-    const cert = fs.readFileSync(certPath, 'utf8');
-    const key = fs.readFileSync(keyPath, 'utf8');
-    
-    const httpsServer = https.createServer({ cert, key }, app);
-    httpsServer.listen(PORT_FINAL, () => {
-      console.log(`✅ HTTPS Server listening on port ${PORT_FINAL}`);
-      console.log(`Frontend served from: ${clientDistPath}`);
-    });
-    useHttps = true;
-  } catch (err) {
-    console.warn(`⚠️  Could not load certificates: ${err.message}`);
-    console.log(`Falling back to HTTP on port ${PORT_FINAL}`);
-  }
-}
-
-// Fall back to HTTP if no certificates
-if (!useHttps) {
-  app.listen(PORT_FINAL, () => {
-    console.log(`Server listening on port ${PORT_FINAL} (HTTP)`);
-    console.log(`Frontend served from: ${clientDistPath}`);
-  });
-}
+// Use HTTP (HTTPS can be added via AWS Certificate Manager + Load Balancer configuration)
+app.listen(PORT_FINAL, () => {
+  console.log(`Server listening on port ${PORT_FINAL} (HTTP)`);
+  console.log(`Frontend served from: ${clientDistPath}`);
+});
 
 
 
