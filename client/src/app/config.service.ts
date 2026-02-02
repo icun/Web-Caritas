@@ -32,7 +32,7 @@ export class ConfigService {
     // En producción: Amplify apunta directamente a Elastic Beanstalk
     if (hostname.includes('dsdckejume7fb.amplifyapp.com')) {
       // Direct connection to Elastic Beanstalk backend
-      return 'https://acogida-app-env.eba-sppfcmpt.us-east-1.elasticbeanstalk.com';
+      return 'http://acogida-backend-env.eba-cwdpkgup.us-east-1.elasticbeanstalk.com';
     }
     
     // Fallback: usar la misma URL raíz
