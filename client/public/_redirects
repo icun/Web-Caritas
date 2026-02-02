@@ -1,0 +1,4 @@
+# Redirect API calls to Elastic Beanstalk backend
+/api/* https://acogida-app-env.eba-sppfcmpt.us-east-1.elasticbeanstalk.com/api/:splat 200
+# SPA routing - redirect all non-file requests to index.html
+/* /index.html 200
