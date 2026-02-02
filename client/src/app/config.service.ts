@@ -29,10 +29,10 @@ export class ConfigService {
       return `${protocol}//localhost:3000`;
     }
     
-    // En producción: usar ruta relativa /api
-    // Amplify redirige /api/* a EB backend (configurado en console)
+    // En producción: Amplify apunta directamente a Elastic Beanstalk
     if (hostname.includes('dsdckejume7fb.amplifyapp.com')) {
-      return '/api';
+      // Direct connection to Elastic Beanstalk backend
+      return 'https://acogida-app-env.eba-sppfcmpt.us-east-1.elasticbeanstalk.com';
     }
     
     // Fallback: usar la misma URL raíz
