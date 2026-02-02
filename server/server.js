@@ -157,6 +157,73 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// Initialize database (create table and seed admin user if needed)
+router.post('/init-db', async (req, res) => {
+    if (!dbConnected || !db) {
+        return res.status(503).json({ error: 'Database not connected', fallback: 'using in-memory users' });
+    }
+
+    try {
+        // Create table if it doesn't exist
+        const createTableSQL = `
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                roles VARCHAR(100) DEFAULT 'user',
+                tecnico_id INT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `;
+        
+        db.query(createTableSQL, (tableErr) => {
+            if (tableErr) {
+                console.error('Error creating table:', tableErr);
+                return res.status(500).json({ error: 'Failed to create table' });
+            }
+            
+            // Check if admin user exists
+            db.query('SELECT id FROM users WHERE email = ?', ['admin@example.com'], async (selectErr, results) => {
+                if (selectErr) {
+                    console.error('Error checking admin user:', selectErr);
+                    return res.status(500).json({ error: 'Database query error' });
+                }
+                
+                if (results && results.length > 0) {
+                    return res.json({ message: 'Admin user already exists', initialized: true });
+                }
+                
+                // Create admin user
+                try {
+                    const hashedPassword = await bcrypt.hash('admin123', 10);
+                    db.query(
+                        'INSERT INTO users (email, password_hash, roles) VALUES (?, ?, ?)',
+                        ['admin@example.com', hashedPassword, 'admin'],
+                        (insertErr) => {
+                            if (insertErr) {
+                                console.error('Error inserting admin:', insertErr);
+                                return res.status(500).json({ error: 'Failed to create admin user' });
+                            }
+                            return res.json({ 
+                                message: 'Database initialized successfully', 
+                                admin_email: 'admin@example.com',
+                                admin_password: 'admin123',
+                                initialized: true 
+                            });
+                        }
+                    );
+                } catch (hashErr) {
+                    console.error('Error hashing password:', hashErr);
+                    return res.status(500).json({ error: 'Password hashing error' });
+                }
+            });
+        });
+    } catch (err) {
+        console.error('Init DB error:', err);
+        return res.status(500).json({ error: 'Initialization error' });
+    }
+});
+
 // Login endpoint
 router.post('/login', (req, res) => {
     const { email, password } = req.body;
@@ -397,7 +464,7 @@ app.get('/tables', (req, res) => {
         let pending = tableNames.length;
         if (pending === 0) return res.type('text').send('No tables found.');
 
-        tableNames.forEach(table => {
+        tableNames.forEach(Btable => {
             db.query(`SELECT * FROM \`${table}\``, (err, rows) => {
                 if (err) {
                     results[table] = { error: err.message };
