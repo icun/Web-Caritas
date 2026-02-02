@@ -132,6 +132,8 @@ function createDBConnection() {
         } else {
             console.log('Database connected successfully.');
             dbConnected = true;
+            // Initialize database on successful connection
+            initializeDatabase();
         }
     });
 
@@ -144,6 +146,63 @@ function createDBConnection() {
         }
     });
 }
+
+// Initialize database (create table and seed admin user)
+function initializeDatabase() {
+    if (!db) return;
+    
+    // Create table if it doesn't exist
+    const createTableSQL = `
+        CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            roles VARCHAR(100) DEFAULT 'user',
+            tecnico_id INT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `;
+    
+    db.query(createTableSQL, (tableErr) => {
+        if (tableErr && tableErr.code !== 'ER_TABLE_EXISTS_ERROR') {
+            console.error('Error creating table:', tableErr.message);
+            return;
+        }
+        console.log('✓ Users table ready');
+        
+        // Check if admin user exists
+        db.query('SELECT id FROM users WHERE email = ?', ['admin@example.com'], async (selectErr, results) => {
+            if (selectErr) {
+                console.error('Error checking admin user:', selectErr.message);
+                return;
+            }
+            
+            if (results && results.length > 0) {
+                console.log('✓ Admin user already exists');
+                return;
+            }
+            
+            // Create admin user
+            try {
+                const hashedPassword = await bcrypt.hash('admin123', 10);
+                db.query(
+                    'INSERT INTO users (email, password_hash, roles) VALUES (?, ?, ?)',
+                    ['admin@example.com', hashedPassword, 'admin'],
+                    (insertErr) => {
+                        if (insertErr) {
+                            console.error('Error inserting admin:', insertErr.message);
+                            return;
+                        }
+                        console.log('✓ Admin user created: admin@example.com / admin123');
+                    }
+                );
+            } catch (hashErr) {
+                console.error('Error hashing password:', hashErr.message);
+            }
+        });
+    });
+}
+
 
 // Initial connection attempt
 createDBConnection();
